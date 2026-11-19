@@ -1,0 +1,27 @@
+{
+  "name": "Modelo Drones 1",
+  "executionType": "spn_stationary_simulation",
+  "simulationTime": 8000,
+  "samplingPoints": 1000,
+  "confidenceLevel": 0.95,
+  "maxRelativeError": 0.05,
+  "advancedOptions": {
+    "debug": false,
+    "parallelism": 4,
+    "timeoutMs": 30000,
+    "maxStates": null,
+    "tolerance": 1e-10,
+    "numericPolicy": "stable_f64",
+    "precisionBits": 256,
+    "deterministicReduction": false,
+    "maxAbsoluteError": 0,
+    "repetitions": null,
+    "minSamples": 30,
+    "maxSamples": 250,
+    "warmupTime": 0,
+    "maxEvents": 200000,
+    "seed": null
+  },
+  "createdAt": "2026-11-19T02:16:26.333Z",
+  "updatedAt": "2026-11-19T02:16:26.333Z"
+}

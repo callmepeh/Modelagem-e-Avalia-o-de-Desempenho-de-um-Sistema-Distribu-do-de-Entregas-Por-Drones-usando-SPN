@@ -1,0 +1,15 @@
+experimento,cenario,arquivo,lambda_ped_min,drones_C,capacidade_N,MPT_min,MQT_min,MRT_min,TP_ped_min,U_pct,DP_pct
+E1,Demanda baixa,dados/E1_demanda/E1_lambda_0.03.csv,0.03,4,15,21.959762,0.029413,21.989175,0.030006,16.408431,0.0
+E1,Demanda moderada,dados/E1_demanda/E1_lambda_0.06.csv,0.06,4,15,22.565615,0.264582,22.830197,0.057366,31.957899,0.0
+E1,Demanda média,dados/E1_demanda/E1_lambda_0.09.csv,0.09,4,15,22.528335,1.214136,23.742472,0.087789,48.892329,0.0
+E1,Referência,dados/E1_demanda/E1_lambda_0.12_referencia.csv,0.12,4,15,22.060412,3.972606,26.033018,0.119445,65.800911,0.020306
+E2,Referência,dados/E1_demanda/E1_lambda_0.12_referencia.csv,0.12,4,15,22.060412,3.972606,26.033018,0.119445,65.800911,0.020306
+E3,Referência,dados/E1_demanda/E1_lambda_0.12_referencia.csv,0.12,4,15,22.060412,3.972606,26.033018,0.119445,65.800911,0.020306
+E4,Referência,dados/E1_demanda/E1_lambda_0.12_referencia.csv,0.12,4,15,22.060412,3.972606,26.033018,0.119445,65.800911,0.020306
+E1,Demanda alta,dados/E1_demanda/E1_lambda_0.15.csv,0.15,4,15,22.300909,9.294473,31.595382,0.144015,79.694996,0.307194
+E2,Gargalo de frota,dados/E2_frota/E2_drones_2_gargalo.csv,0.12,2,15,22.084888,118.108024,140.192912,0.090438,99.732666,23.406692
+E2,Frota expandida,dados/E2_frota/E2_drones_6_expandida.csv,0.12,6,15,22.123822,0.284473,22.408295,0.11943,44.000635,5e-06
+E3,Capacidade reduzida,dados/E3_capacidade/E3_capacidade_05_reduzida.csv,0.12,4,5,22.38032,0.827922,23.208242,0.107237,59.891344,8.876466
+E3,Capacidade alta,dados/E3_capacidade/E3_capacidade_30_alta.csv,0.12,4,30,22.016907,3.866149,25.883056,0.119354,65.629809,0.0
+E4,Combinado baixo,dados/E4_combinado/E4_combinado_baixo_lambda0.06_C2.csv,0.06,2,15,22.202261,11.141248,33.343509,0.059406,65.829448,0.0
+E4,Pico dimensionado,dados/E4_combinado/E4_combinado_pico_lambda0.15_C6.csv,0.15,6,15,21.885601,0.769878,22.655479,0.149992,54.663973,0.0

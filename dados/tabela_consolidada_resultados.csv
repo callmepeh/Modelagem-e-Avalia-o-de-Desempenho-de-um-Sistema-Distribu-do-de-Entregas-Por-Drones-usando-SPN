@@ -1,0 +1,12 @@
+Experimento,Cenario,lambda,C,N,TP_ped_min,MRT_min,MQT_min,U_pct,DP_pct
+E1,Demanda baixa,0.03,4,15,0.03,21.98,0.0,16.4,0.0
+E1,Demanda moderada,0.06,4,15,0.057,22.83,0.3,31.96,0.0
+E1,Demanda média,0.09,4,15,0.088,23.74,1.2,48.89,0.0
+E1/E2/E3/E4,Referência,0.12,4,15,0.119,26.03,4.0,65.8,0.02
+E1,Demanda alta,0.15,4,15,0.144,31.6,9.3,79.69,0.31
+E2,Gargalo de frota,0.12,2,15,0.09,140.19,118.2,99.73,23.4
+E2,Frota expandida,0.12,6,15,0.119,22.4,0.4,44.0,0.0
+E3,Capacidade reduzida,0.12,4,5,0.107,23.2,1.2,59.89,8.87
+E3,Capacidade alta,0.12,4,30,0.119,25.88,3.9,65.62,0.0
+E4,Combinado baixo,0.06,2,15,0.059,33.34,11.3,65.82,0.0
+E4,Pico dimensionado,0.15,6,15,0.15,22.65,0.7,54.66,0.0

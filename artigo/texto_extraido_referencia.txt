@@ -1,0 +1,1032 @@
+Modelagem e Avaliação de Desempenho de um
+Sistema Distribuído de Entregas por Drones Usando
+Redes de Petri Estocásticas
+Pedro Henrique de carvalho Sousa
+Bacharelado em Sistemas de Informação
+Universidade Federal do Piauí (UFPI)
+Picos, PI, Brasil
+pedro.carvalho@ufpi.edu.br
+
+Resumo—Serviços de entrega por drones enfrentam um problema recorrente de dimensionamento: frotas pequenas saturam
+e violam os acordos de nível de serviço (SLA), enquanto frotas
+grandes ficam ociosas. Este artigo apresenta um modelo de
+Rede de Petri Estocástica (SPN) para um centro de distribuição
+com chegada de pedidos de Poisson, capacidade de admissão
+finita e frota homogênea de drones, e o utiliza para responder
+como demanda, frota e capacidade afetam o desempenho. Cinco
+métricas são formalizadas em função da marcação do modelo:
+vazão (TP), tempo médio de resposta (MRT), tempo médio de fila
+(MQT), utilização (U) e probabilidade de descarte (DP). Quatro
+conjuntos de experimentos, avaliados em regime estacionário
+no Jupiter, variam a taxa de chegada, a frota, a capacidade e
+cenários combinados. A frota é o principal gargalo: com λ = 0,12
+pedido/min, reduzir de quatro para dois drones eleva a utilização
+a 99,7%, o MRT a 140,2 min e o descarte a 23,4%. Já ampliar
+a capacidade de 15 para 30 vagas não traz ganho mensurável. A
+configuração de referência (4 drones, 15 vagas) equilibra recursos
+e desempenho, com U = 65,8%, MRT de 26,0 min e descarte
+de 0,02%. Uma solução numérica independente da cadeia de
+Markov equivalente reproduz os resultados com erro médio de
+MRT de 1,8% (máximo de 7,5%, no nível de maior demanda).
+Index Terms—Redes de Petri estocásticas, entregas por drones,
+avaliação de desempenho, dimensionamento de frota, gêmeo
+digital.
+
+I. I NTRODUÇÃO
+A entrega de encomendas por veículos aéreos não tripulados
+(drones) tornou-se uma alternativa concreta para a logística de
+última milha, pois reduz o tempo de entrega e dispensa a malha
+viária [1], [2]. Essa vantagem, porém, depende de uma operação bem dimensionada. A demanda por entregas é variável e
+aleatória, e a frota é um recurso caro e finito. Quando a frota
+é insuficiente, os pedidos se acumulam, o tempo de entrega
+cresce e o SLA é violado; quando é excessiva, a ociosidade
+eleva o custo operacional [3].
+Avaliar essas decisões por experimentação direta é custoso
+e arriscado. Modelos formais permitem explorar diferentes
+configurações antes de implantá-las. Entre eles, as Redes de
+Petri Estocásticas (Stochastic Petri Nets, SPN) [4]–[6] são adequadas porque representam de forma natural a concorrência, a
+sincronização e a contenção por recursos, e permitem calcular
+
+Tabela I
+P OSICIONAMENTO EM RELAÇÃO A TRABALHOS COM SPN PARA DRONES
+Trabalho
+
+Foco principal
+
+Métricas reportadas
+
+[7]
+
+Bateria, recarga e missões cooperativas
+Colisões e logística de reparo
+Gêmeo digital e frota dinâmica por SLA
+Demanda × frota × capacidade finita, em regime estacionário
+
+Utilização, tempo médio de
+missão, taxa de entrega
+Utilização, taxa de entrega,
+tempo médio de missão
+Tempo médio de missão,
+vazão, utilização da frota
+TP, MRT, MQT, U e probabilidade de descarte
+
+[8]
+[3]
+Este
+
+métricas de desempenho a partir da marcação estacionária do
+modelo.
+Trabalhos relacionados. O uso de SPN na avaliação de
+sistemas de drones é recente e ativo. Silva et al. [7] modelam
+missões individuais e cooperativas, com estações de recarga, e
+avaliam utilização, tempo médio de missão e taxa de entrega
+com análise de sensibilidade por planejamento de experimentos. Feitosa et al. [8] incorporam probabilidade de colisão e
+logística de reparo, e uma extensão em Redes de Petri avalia
+recuperação de colisões e eficiência energética [9]. A mesma
+família de modelos chega à fabricação de drones de baixo
+custo [10]. Em outra direção, Iqbal e Buhnova [11] discutem
+o uso de gêmeos digitais para construir confiança em drones
+autônomos, e Miqueias et al. [3] propõem o Drones-DT, em
+que um modelo SPN é o núcleo analítico de um gêmeo digital
+que executa análises what-if e ajusta a frota dinamicamente
+para cumprir um SLA de tempo médio de entrega. Os trabalhos
+anteriores enfatizam energia, colisões e recarga. Este artigo
+adota o recorte complementar do Drones-DT, isto é, a relação
+entre demanda, frota e capacidade de admissão, e o investiga
+de forma sistemática e em regime estacionário.
+Pergunta de pesquisa. Como a taxa de chegada, o tamanho
+da frota e a capacidade do centro de distribuição influenciam
+a vazão, o tempo de resposta, a utilização e o descarte de pedidos, e qual configuração equilibra recursos e desempenho?
+Contribuições. (i) Um modelo SPN parametrizável do ciclo
+
+descarte se cheio
+
+Tabela II
+C OMPONENTES DO MODELO SPN E PARÂMETROS
+
+Centro de
+distribuição
+N vagas, fila FIFO
+
+Pedidos
+Poisson λ
+
+Frota
+C drones
+
+métricas
+
+Entrega
+e retorno
+
+tamanho da frota
+
+Gêmeo digital (Drones-DT): sombra
+SPN, análise what-if, decisão por SLA
+
+Figura 1. Arquitetura do sistema de entregas e sua relação com o gêmeo
+digital.
+
+de entrega com capacidade finita e contenção por drones;
+(ii) a formalização de cinco métricas em função do modelo;
+(iii) quatro conjuntos de experimentos (E1–E4) com discussão
+de gargalos e recomendação de configuração; e (iv) uma
+validação cruzada com a solução numérica da cadeia de
+Markov equivalente.
+O restante do artigo está organizado assim: a Seção II
+descreve o sistema, a Seção III apresenta o modelo e as
+métricas, a Seção IV traz os experimentos e a discussão, e
+a Seção V conclui.
+II. A RQUITETURA
+O sistema estudado (Fig. 1) é um serviço de entregas ponto
+a ponto operado a partir de um centro de distribuição. Os
+elementos e as restrições operacionais são os seguintes.
+Chegada de pedidos. Os pedidos chegam segundo um
+processo de Poisson com taxa λ (pedidos/min). Esse processo
+é uma hipótese usual para demanda agregada de muitos
+clientes independentes.
+Admissão e fila. O centro dispõe de N vagas (slots) que
+representam a capacidade do sistema, isto é, pedidos em espera
+mais pedidos em missão. Um pedido que chega com todas as
+vagas ocupadas é descartado. Os pedidos admitidos formam
+uma fila atendida na ordem de chegada.
+Frota. Há C drones homogêneos. Cada drone transporta um
+pacote por missão. Uma missão tem seis fases: decolagem,
+voo de ida, pouso e entrega, nova decolagem, voo de volta e
+pouso no centro. Ao final, o drone e a vaga ficam novamente
+disponíveis. Não há modelagem de recarga, falhas ou colisões,
+que ficam como extensão futura.
+Camada de gêmeo digital. No Drones-DT [3], as métricas
+do sistema físico sincronizam um modelo SPN (a “sombra
+digital”), que avalia cenários what-if de tamanho de frota e
+decide por adicionar ou liberar drones alugados. O modelo
+apresentado aqui corresponde a esse núcleo analítico, e os
+resultados da Seção IV equivalem a uma tabela de consulta
+what-if para diferentes níveis de demanda e frota.
+III. M ODELAGEM DO SISTEMA
+A. Modelo SPN
+O modelo (Fig. 2) segue a estrutura adotada em [3]. Os
+lugares e transições estão descritos na Tabela II. Um token em
+um dos lugares de fase representa uma encomenda em uma
+
+Elemento
+
+Tipo
+
+Attempt,
+lugares
+Queue
+Prep,
+lugares
+Outbound,
+AtDestination,
+ReturnPrep,
+Inbound,
+LandingInput
+Dropped
+lugar
+DroneFree
+lugar
+Slots
+
+lugar
+
+Arrival
+Takeoff_A/B
+
+temp.
+temp.
+
+AtoB, AtoA
+
+temp.
+
+Landing_A/B temp.
+Admit,
+imed.
+StartMission,
+Drop,
+DropClear
+
+Descrição / valor
+Pedido que chegou; pedido admitido
+aguardando drone (0)
+Fases da missão (0)
+
+Pedido descartado (0)
+Drones disponíveis (marcação inicial
+C)
+Vagas livres do centro (marcação inicial N )
+Chegadas; média 1/λ; servidor único
+Decolagem; média 0,5 min; inf. server
+Voo por trecho; média 10 min; inf.
+server
+Pouso; média 0,5 min; inf. server
+Admissão, alocação do drone, descarte (arco inibidor de Slots) e limpeza
+
+etapa da missão; os lugares DroneFree e Slots guardam,
+respectivamente, os drones disponíveis e as vagas livres do
+centro.
+Chegada, admissão e descarte. A transição temporizada
+Arrival (servidor único, atraso exponencial de média 1/λ)
+deposita um pedido em Attempt. A transição imediata
+Admit move o pedido para Queue e consome um token de
+Slots. A transição imediata Drop possui um arco inibidor
+vindo de Slots: ela só dispara quando #Slots = 0,
+enviando o pedido para Dropped, de onde DropClear o
+remove. Assim, pedidos que chegam com o centro cheio são
+descartados.
+Contenção. StartMission só dispara quando há pedido
+em Queue e drone em DroneFree; ela aloca o drone e
+deposita o pedido em Prep. Se não há drone livre, o pedido
+espera em Queue. Esse é o ponto de contenção do modelo.
+Missão. As seis transições temporizadas seguintes
+(Takeoff_A, AtoB, Landing_B, Takeoff_B, AtoA,
+Landing_A) têm atraso exponencial e semântica de infinite
+server: cada drone em missão avança de forma independente,
+pois a limitação de concorrência já é imposta pelo número
+de tokens em DroneFree. Em Landing_A, os tokens
+retornam a DroneFree e a Slots.
+Os tempos das fases somam um tempo médio de processamento de missão MPT = 2(0,5 + 10 + 0,5) = 22 min. A
+marcação inicial é #DroneFree = C, #Slots = N e zero
+nos demais lugares. A rede é limitada, com no máximo N tokens em circulação, o que garante a existência da distribuição
+estacionária.
+B. Métricas de desempenho
+Seja E{#P} a esperança do número de tokens do lugar P em regime estacionário e Σtot = E{#Queue} +
+
+Figura 2. Modelo SPN do sistema de entregas por drones, conforme implementado no Jupiter. Os lugares Slots (CAPACITY) e DroneFree (NUM_DRONES)
+têm marcação inicial N e C; os demais começam vazios. O arco com círculo em Drop é um arco inibidor.
+
+[pedidos/min]
+
+(1)
+(2)
+(3)
+
+f
+
+MQT = MRT − MPT [min]
+C − E{#DroneFree}
+U=
+× 100 [%]
+C
+DP = P {#Slots = 0} × 100 [%]
+
+(4)
+
+34
+
+MRT (min)
+
+E{#LandingInput}
+TP =
+TLanding_A
+Σtot
+[min]
+MRT =
+TP
+∑︂
+MPT =
+Tf = 22 [min]
+
+36
+
+32
+
+MRT (CTMC)
+MRT (Jupiter)
+
+A Eq. (2) é a Lei de Little [12], a mesma usada em [3].
+Pela propriedade PASTA, a probabilidade de que uma chegada
+encontre o centro cheio é igual à fração de tempo em que
+#Slots = 0, o que justifica a Eq. (6) e implica TP =
+λ(1 − DP/100). Como MRT é a soma do tempo de espera
+e do tempo de processamento, a Eq. (4) fornece o tempo de
+fila.
+IV. S IMULAÇÕES E RESULTADOS
+A. Planejamento experimental
+Os experimentos foram executados no Jupiter, em regime
+estacionário, o que é adequado porque o sistema é limitado e
+ergódico e as métricas de interesse são médias de longo prazo
+[13]. A ferramenta Mercury [14] é um exemplo do tipo de
+ambiente de avaliação de SPN usado na literatura correlata.
+O cenário de referência é λ = 0,12 pedido/min (7,2
+pedidos/h), C = 4 drones e N = 15 vagas. A carga oferecida
+é a = λ · MPT = 2,64 erlangs, logo a utilização esperada é
+a/C = 66%, valor abaixo do limiar de 70% usado como regra
+prática de projeto para evitar filas longas [13]. A capacidade
+N = 15 corresponde a cerca de 3,75 vezes a frota. Os tempos
+de fase (0,5 min de decolagem e pouso, 10 min por trecho) são
+os mesmos em todos os cenários, de modo que as diferenças
+
+U (Jupiter)
+
+80
+
+limite U = 70 %
+
+60
+
+30
+28
+
+40
+
+26
+24
+
+20
+
+22
+20
+
+0,04
+
+(5)
+(6)
+
+100
+
+U (CTMC)
+
+Utilização U (%)
+
+38
+
+E{#Prep} + E{#Outbound} + E{#AtDestination} +
+E{#ReturnPrep} + E{#Inbound} + E{#LandingInput} o
+número médio de pedidos no sistema. Adotam-se as métricas
+a seguir.
+
+0,06
+
+0,08
+
+0,1
+
+0,12
+
+Taxa de chegada λ (pedidos/min)
+
+0,14
+
+0
+
+Figura 3. E1: efeito da taxa de chegada sobre MRT e utilização (C = 4,
+N = 15). Marcadores: Jupiter; linhas tracejadas: solução numérica da CTMC
+equivalente.
+
+observadas decorrem apenas de λ, C e N . Cada conjunto
+varia um fator por vez e mantém os demais constantes: E1
+varia λ em cinco níveis (0,03; 0,06; 0,09; 0,12; 0,15); E2
+varia C ∈ {2, 4, 6}; E3 varia N ∈ {5, 15, 30}; E4 combina
+demanda e frota em três cenários: baixo (λ = 0,06, C = 2),
+referência e pico (λ = 0,15, C = 6), mantendo λ/C próxima
+de 0,03 pedido/min por drone.
+B. Resultados
+A Tabela III consolida parâmetros e resultados. As Figs. 3–
+6 ilustram cada conjunto. Para C = 4 e N = 15 a Tabela
+repete a linha de referência, comum a E1–E4.
+E1 – demanda. Entre λ = 0,03 e 0,12, a demanda quadruplica e a utilização passa de 16,4% para 65,8%, enquanto o
+MRT sobe 18,4% (de 21,98 para 26,03 min). O MRT cresce
+de forma convexa: com baixa carga ele fica praticamente igual
+a MPT (MQT ≈ 0), e a espera só se torna relevante quando U
+se aproxima de 70%. Os três níveis restantes confirmam esse
+comportamento: o MRT é de 22,83 e 23,74 min para λ = 0,06
+e 0,09 (utilização de 32,0% e 48,9%) e salta para 31,60 min em
+λ = 0,15, com U = 79,7% e MQT de 9,3 min, ou seja, 21,4%
+
+Tabela III
+PARÂMETROS E RESULTADOS CONSOLIDADOS ( REGIME ESTACIONÁRIO ). MQT OBTIDO PELA E Q . (4).
+Exp.
+
+Cenário
+
+λ (ped./min)
+
+C
+
+N
+
+TP (ped./min)
+
+MRT (min)
+
+MQT (min)
+
+U (%)
+
+DP (%)
+
+E1
+E1
+E1
+E1/E2/E3/E4
+E1
+
+Demanda baixa
+Demanda moderada
+Demanda média
+Referência
+Demanda alta
+
+0,03
+0,06
+0,09
+0,12
+0,15
+
+4
+4
+4
+4
+4
+
+15
+15
+15
+15
+15
+
+0,030
+0,057
+0,088
+0,119
+0,144
+
+21,98
+22,83
+23,74
+26,03
+31,60
+
+0,0
+0,3
+1,2
+4,0
+9,3
+
+16,40
+31,96
+48,89
+65,80
+79,69
+
+0,00
+0,00
+0,00
+0,02
+0,31
+
+E2
+E2
+
+Gargalo de frota
+Frota expandida
+
+0,12
+0,12
+
+2
+6
+
+15
+15
+
+0,090
+0,119
+
+140,19
+22,40
+
+118,2
+0,4
+
+99,73
+44,00
+
+23,40
+0,00
+
+E3
+E3
+
+Capacidade reduzida
+Capacidade alta
+
+0,12
+0,12
+
+4
+4
+
+5
+30
+
+0,107
+0,119
+
+23,20
+25,88
+
+1,2
+3,9
+
+59,89
+65,62
+
+8,87
+0,00
+
+E4
+E4
+
+Combinado baixo
+Pico dimensionado
+
+0,06
+0,15
+
+2
+6
+
+15
+15
+
+0,059
+0,150
+
+33,34
+22,65
+
+11,3
+0,7
+
+65,82
+54,66
+
+0,00
+0,00
+
+100
+
+60
+
+80
+
+65,8%
+
+40
+
+60
+
+44,0%
+26,0
+
+20
+
+C=2
+
+C = 4 (ref.)
+
+22,4
+
+40
+20
+
+0,15
+
+45
+40
+
+33,34
+
+35
+30
+
+26,03
+
+0,1
+
+22,65
+
+0,05
+
+25
+20
+
+0
+
+15
+Baixo
+(λ=0,06; C=2)
+
+0
+
+C=6
+
+MRT (min)
+
+0,2
+
+120
+
+99,7%
+
+80
+
+0
+
+140
+
+TP (Jupiter)
+
+MRT (min)
+
+MRT (min)
+
+140,2
+
+λ oferecida
+
+MRT (min)
+
+Utilização U (%)
+
+100
+
+160
+
+U (%)
+
+Vazão (pedidos/min)
+
+120
+
+Ref.
+(0,12; 4)
+
+Pico
+(0,15; 6)
+
+Tamanho da frota C (drones)
+
+Cenário combinado (demanda × frota)
+
+Figura 4. E2: efeito do tamanho da frota sobre utilização e MRT (λ = 0,12,
+N = 15).
+
+Figura 6. E4: vazão e MRT em cenários combinados de demanda e frota
+(N = 15).
+
+10
+
+DP (%)
+MRT (min)
+
+8,87%
+
+8
+
+30
+28
+
+26,03
+
+6
+4
+
+25,88
+
+26
+24
+
+23,20
+
+2
+0
+
+32
+
+MRT (min)
+
+Prob. de descarte DP (%)
+
+12
+
+22
+
+N=5
+
+0,02%
+
+0,00%
+
+N = 15 (ref.)
+
+N = 30
+
+20
+
+Capacidade do sistema N (slots)
+
+Figura 5. E3: efeito da capacidade do sistema sobre descarte e MRT (λ =
+0,12, C = 4).
+
+acima do MRT da referência. Nesse último nível o descarte
+deixa de ser desprezível (0,31%), pois a frota opera próxima
+da saturação e N = 15 já não absorve todas as flutuações; nos
+demais níveis ele permanece abaixo de 0,03%. Na referência,
+
+a Lei de Little dá Σtot = TP · MRT ≈ 0,119 × 26,03 ≈ 3,1
+pedidos no sistema, dos quais U · C ≈ 2,6 estão em missão e
+cerca de 0,5 aguarda drone.
+E2 – frota. É o fator mais sensível. Com C = 2, a carga
+oferecida (a = 2,64) excede a capacidade de serviço (C = 2):
+a utilização satura em 99,7% e a vazão fica em 0,090 ped./min,
+praticamente o limite superior C/MPT = 2/22 = 0,091, de
+modo que cerca de 25% da demanda não pode ser atendida.
+A fila enche, o MRT chega a 140,2 min (6,4 vezes MPT) e
+23,4% dos pedidos são descartados. Com C = 6, o MRT cai
+13,9% em relação à referência (22,40 min, apenas 1,8% acima
+de MPT), mas a utilização cai para 44%, ou seja, metade dos
+drones adicionais permanece ociosa.
+E3 – capacidade. Com N = 5, apenas uma vaga de
+espera existe além dos quatro drones, e o descarte chega a
+8,87%. O MRT diminui para 23,20 min, mas essa melhora é
+aparente: ela decorre de rejeitar pedidos que seriam atendidos
+com espera, e a vazão cai de 0,119 para 0,107 ped./min. Com
+N = 30, o descarte vai de 0,02% a 0% e o MRT varia
+menos de 1% (25,88 vs. 26,03 min). Portanto, aumentar a
+capacidade além do necessário para absorver a variabilidade
+não melhora o desempenho, e reduzi-la abaixo disso apenas
+
+Tabela IV
+VALIDAÇÃO CRUZADA : J UPITER (J) vs. CTMC EQUIVALENTE (M)
+Cenário (λ, C, N ) MRTJ MRTM Erro
+(min) (min) (%)
+
+DPJ
+(%)
+
+DPM
+(%)
+
+0,03; 4; 15
+0,06; 4; 15
+0,09; 4; 15
+0,12; 4; 15
+0,15; 4; 15
+0,12; 2; 15
+0,12; 6; 15
+0,12; 4; 5
+0,12; 4; 30
+0,06; 2; 15
+0,15; 6; 15
+
+0,00
+0,00
+0,00
+0,02
+0,31
+23,40
+0,00
+8,87
+0,00
+0,00
+0,00
+
+0,00
+0,00
+0,00
+0,03
+0,66
+24,31
+0,00
+9,14
+0,00
+0,01
+0,01
+
+21,98 22,03
+22,83 22,32
+23,74 23,38
+26,03 26,31
+31,60 33,97
+140,19 139,90
+22,40 22,30
+23,20 22,84
+25,88 26,37
+33,34 34,15
+22,65 22,88
+
+0,2
+2,2
+1,5
+1,1
+7,5
+0,2
+0,4
+1,6
+1,9
+2,4
+1,0
+
+desloca o problema para a perda de pedidos.
+E4 – combinados. No cenário baixo, U = 65,8% é
+praticamente igual ao da referência, mas o MRT é 28% maior
+(33,34 contra 26,03 min). Com a mesma utilização por drone,
+uma frota menor tem menos capacidade de compartilhar a
+carga entre servidores, e os pedidos esperam mais (MQT de
+11,3 contra 4,0 min). No cenário de pico, a frota de seis drones
+sustenta λ = 0,15 sem descarte, com U = 54,7% e MRT de
+22,65 min, e a vazão (0,150) iguala a demanda.
+Validação cruzada. Para verificar a consistência dos resultados, resolveu-se numericamente a cadeia de Markov de
+tempo contínuo equivalente ao modelo (Poisson, seis fases
+exponenciais, C servidores, capacidade N ), em Python, e
+comparou-se com os onze pontos obtidos no Jupiter. O erro
+relativo do MRT foi de no máximo 2,4% em dez deles e
+de 7,5% em λ = 0,15 com C = 4 (média geral de 1,8%).
+A vazão difere em até 4,4% (em λ = 0,06), a utilização
+em até 2,3 pontos percentuais e o descarte em até 0,9 ponto
+percentual. O maior desvio ocorre no ponto mais próximo da
+saturação (U ≈ 80%), onde as métricas tendem a ser mais
+sensíveis à duração da simulação e ao transitório inicial: a
+CTMC prevê MRT de 33,97 min e descarte de 0,66%, contra
+31,60 min e 0,31% no Jupiter. Ainda assim, as duas soluções
+concordam quanto ao regime de operação e ao fato de que
+C = 4 viola o SLA de 30 min nesse nível. Isso indica
+que o modelo está bem especificado e que os resultados são
+coerentes com a teoria de filas [15]. Os resultados do Jupiter,
+e não os da CTMC, são os que compõem a Tabela III e as
+Figs. 3–6.
+C. Dimensionamento mínimo da frota (what-if)
+O Drones-DT decide quantos drones manter por meio de
+análises what-if [3]. Para ilustrar esse uso, a Tabela V mostra
+a menor frota que cumpre um SLA hipotético de MRT ≤
+30 min com DP ≤ 1%, obtida com a solução numérica da
+CTMC (N = 15). Esses valores são previsões analíticas,
+validadas na Tabela IV apenas nos pontos já executados, e
+devem ser confirmados no Jupiter antes de uso operacional.
+O único ponto da Tabela V já testado com a frota mínima
+anterior é λ = 0,15: com C = 4, o Jupiter indica MRT de
+31,60 min, acima do SLA, o que é coerente com Cmin = 5.
+
+Tabela V
+F ROTA MÍNIMA PARA MRT ≤ 30 MIN E DP ≤ 1% (N = 15; CTMC)
+λ (ped./min)
+
+Cmin
+
+MRT (min)
+
+U (%)
+
+DP (%)
+
+0,03
+0,06
+0,09
+0,12
+0,15
+
+2
+3
+3
+4
+5
+
+23,98
+23,72
+28,76
+26,31
+24,96
+
+33,0
+44,0
+66,0
+66,0
+66,0
+
+0,00
+0,00
+0,02
+0,03
+0,05
+
+A frota mínima cresce menos que a demanda: quintuplicar λ
+(de 0,03 para 0,15) exige 2,5 vezes mais drones (de 2 para
+5). Esse efeito de escala reforça o resultado de E4, pois frotas
+maiores compartilham melhor a carga e operam com menos
+espera para a mesma utilização.
+D. Discussão
+(i) Influência da demanda. O desempenho se degrada de
+forma não linear. Até U ≈ 0,5 o MRT é quase constante, mas
+perto de U ≈ 0,8 ele cresce rápido (31,6 min no Jupiter para
+λ = 0,15 com C = 4, contra 26,0 min em U ≈ 0,66). A
+demanda só é problemática relativamente à frota.
+(ii) Principal gargalo. É a frota: a vazão máxima do sistema
+é C/MPT, e qualquer carga acima dela vira fila, descarte
+e tempos de resposta várias vezes maiores que o tempo de
+missão. A capacidade de admissão não é gargalo, porque só
+decide onde o excesso é absorvido.
+(iii) Efeito do aumento de capacidade. Ampliar a frota
+reduz o MRT de forma acentuada quando o sistema está
+sobrecarregado (C = 2 → 4: 140,2 para 26,0 min) e de forma
+marginal quando já está equilibrado (C = 4 → 6: −13,9%).
+Ampliar as vagas de 15 para 30 é inócuo.
+(iv) Configuração equilibrada. C = 4 e N = 15 mantêm
+U < 70%, descarte desprezível e MRT apenas 18% acima do
+tempo de missão. Com C = 6 o ganho de 3,6 min custa 50%
+a mais de drones e deixa a frota 44% utilizada.
+(v) Recomendação. Para λ = 0,12 recomenda-se C = 4
+e N = 15. Para picos de λ = 0,15, a configuração avaliada
+no Jupiter, C = 6, opera com folga (U = 54,7%, DP nulo),
+e a CTMC indica que C = 5 é o mínimo que cumpre o SLA
+hipotético (Tabela V), a ser confirmado experimentalmente. O
+ideal é provisionar esses drones adicionais de forma dinâmica,
+como no Drones-DT [3], pois mantê-los o tempo todo seria
+superdimensionamento em horários de baixa demanda. Por
+fim, o cenário E4 baixo (C = 2) levou o MRT a 33,3 min,
+acima do SLA hipotético: com λ = 0,06 são necessários três
+drones.
+Ameaças à validade. Os tempos são exponenciais, o que
+ignora variações menores no voo real; as missões são homogêneas (um único destino); e recarga, colisões, falhas e clima
+não foram modelados, ao contrário de [7], [8]. Os valores
+absolutos de tempo dependem dos parâmetros adotados, mas
+as conclusões qualitativas (frota como gargalo, saturação em
+C/MPT, regra de U < 70%) decorrem da estrutura do
+modelo.
+
+V. C ONCLUSÃO
+Este artigo apresentou um modelo SPN de um sistema de
+entregas por drones com capacidade finita e contenção por
+frota, formalizou cinco métricas e avaliou o sistema em quatro
+conjuntos de experimentos. A frota é o principal gargalo: com
+λ = 0,12 pedido/min, dois drones saturam o sistema (U de
+99,7%, MRT de 140,2 min e descarte de 23,4%), ao passo
+que a ampliação da capacidade de 15 para 30 vagas não traz
+ganho. A configuração de referência com quatro drones e
+15 vagas equilibra recursos e desempenho, e para picos de
+demanda (λ = 0,15) seis drones operam com folga, sendo
+cinco o mínimo previsto pela CTMC para um SLA de 30 min.
+Uma solução numérica independente da cadeia de Markov
+equivalente reproduziu os resultados com erro médio de MRT
+de 1,8% (máximo de 7,5%, no nível de maior demanda).
+Como trabalhos futuros, pretende-se incluir recarga de bateria, colisões e energia, como em [7], [9], adotar distribuições
+não exponenciais, avaliar políticas de despacho e integrar o
+modelo a um ciclo de decisão orientado por SLA, como o do
+Drones-DT.
+D ISPONIBILIDADE
+Arquivos de configuração e resultados: [link do GitHub].
+Vídeo de apresentação: [link do vídeo].
+R EFERÊNCIAS
+[1] T. Benarbia and K. Kyamakya, “A literature review of drone-based
+package delivery logistics systems and their implementation feasibility,”
+Sustainability, vol. 14, no. 1, p. 360, 2022.
+[2] X. Li, J. Tupayachi, A. Sharmin, and M. M. Ferguson, “Drone-aided
+delivery methods, challenge, and the future: A methodological review,”
+Drones, vol. 7, no. 3, p. 191, 2023.
+[3] J. Miqueias, L. S. Lopes, I. Fé, J. Nunes, L. F. Bittencourt, J. Wickboldt,
+and F. A. Silva, “Drones-DT: Gerenciamento dinâmico de frotas de
+drones representados por gêmeos digitais,” in Anais do SBRC 2026:
+Artigos Completos, SBC, 2026.
+[4] M. K. Molloy, “Performance analysis using stochastic Petri nets,” IEEE
+Trans. Comput., vol. C-31, no. 9, pp. 913–917, 1982.
+[5] M. Ajmone Marsan, G. Balbo, G. Conte, S. Donatelli, and G. Franceschinis, Modelling with Generalized Stochastic Petri Nets. Chichester,
+U.K.: Wiley, 1995.
+[6] F. Bause and P. S. Kritzinger, Stochastic Petri Nets: An Introduction to
+the Theory, 2nd ed. Wiesbaden, Germany: Vieweg, 2002.
+[7] F. A. Silva, V. Barbosa, L. N. Lima, A. Sabino, P. Rego, L. F. Bittencourt,
+J.-W. Lee, D. Min, and T. A. Nguyen, “Efficient strategies for unmanned
+aerial vehicle flights: Analyzing battery life and operational performance
+in delivery services using stochastic models,” IEEE Access, vol. 12, pp.
+144544–144564, 2024.
+[8] L. Feitosa, V. Barbosa, L. F. Bittencourt, F. M. C. de Oliveira, J. V.
+R. Junior, and F. A. Silva, “Aerial deliveries by drones: A performance
+evaluation considering drone collisions and repair logistics,” in Anais do
+SBRC, Natal, Brazil, 2025, pp. 546–559.
+[9] L. Feitosa, V. Barbosa, L. G. Silva, I. Fé, F. M. C. de Oliveira, L. F.
+Bittencourt, H. Flores, and F. A. Silva, “Modeling drone deliveries using
+Petri nets: An evaluation on collision recovery and energy efficiency,” in
+Proc. IEEE Int. Conf. Syst., Man, Cybern. (SMC), 2025, pp. 5870–5875.
+[10] M. Alves, M. Olapade, V. Barbosa, I. Fé, L. Feitosa, H. Flores, and F. A.
+Silva, “Modeling low-cost 3D-printed drone manufacturing for delivery
+systems using stochastic Petri nets,” in Proc. IEEE Int. Conf. Commun.
+(ICC), Glasgow, U.K., 2026, pp. 1–6.
+[11] D. Iqbal and B. Buhnova, “Model-based approach for building trust in
+autonomous drones through digital twins,” in Proc. IEEE Int. Conf. Syst.,
+Man, Cybern. (SMC), 2022, pp. 656–662.
+[12] J. D. C. Little, “A proof for the queuing formula: L = λW ,” Oper.
+Res., vol. 9, no. 3, pp. 383–387, 1961.
+
+[13] R. Jain, The Art of Computer Systems Performance Analysis. New York,
+NY, USA: Wiley, 1991.
+[14] P. Maciel et al., “Mercury: Performance and dependability evaluation of
+systems with exponential, expolynomial, and general distributions,” in
+Proc. IEEE 22nd Pacific Rim Int. Symp. Dependable Comput. (PRDC),
+2017, pp. 50–57.
+[15] G. Bolch, S. Greiner, H. de Meer, and K. S. Trivedi, Queueing Networks
+and Markov Chains, 2nd ed. Hoboken, NJ, USA: Wiley, 2006.
+
+

@@ -1,0 +1,12 @@
+experimento,cenario,lambda_ped_min,drones_C,capacidade_N,arquivo_organizado,arquivo_bruto,descricao
+E1,Demanda baixa,0.03,4,15,dados/E1_demanda/E1_lambda_0.03.csv,dados/brutos/metricas-analise-1795085416263.csv,Demanda baixa com frota de referência
+E1,Demanda moderada,0.06,4,15,dados/E1_demanda/E1_lambda_0.06.csv,dados/brutos/metricas-analise-1795089832892.csv,Demanda moderada com frota de referência
+E1,Demanda média,0.09,4,15,dados/E1_demanda/E1_lambda_0.09.csv,dados/brutos/metricas-analise-1795089867141.csv,Demanda média com frota de referência
+E1/E2/E3/E4,Referência,0.12,4,15,dados/E1_demanda/E1_lambda_0.12_referencia.csv,dados/brutos/metricas-analise-1795085462960.csv,"Cenário de referência operacional (4 drones, 15 slots, lambda=0.12)"
+E1,Demanda alta,0.15,4,15,dados/E1_demanda/E1_lambda_0.15.csv,dados/brutos/metricas-analise-1795089894172.csv,Demanda alta / pico operacional sobre frota de 4 drones
+E2,Gargalo de frota,0.12,2,15,dados/E2_frota/E2_drones_2_gargalo.csv,dados/brutos/metricas-analise-1795085452752.csv,Subdimensionamento severo da frota (2 drones)
+E2,Frota expandida,0.12,6,15,dados/E2_frota/E2_drones_6_expandida.csv,dados/brutos/metricas-analise-1795085457776.csv,Frota superdimensionada para demanda nominal (6 drones)
+E3,Capacidade reduzida,0.12,4,5,dados/E3_capacidade/E3_capacidade_05_reduzida.csv,dados/brutos/metricas-analise-1795085468248.csv,Buffer reduzido para apenas 1 vaga de espera além dos drones (N=5)
+E3,Capacidade alta,0.12,4,30,dados/E3_capacidade/E3_capacidade_30_alta.csv,dados/brutos/metricas-analise-1795085473792.csv,Buffer ampliado para 26 vagas de espera (N=30)
+E4,Combinado baixo,0.06,2,15,dados/E4_combinado/E4_combinado_baixo_lambda0.06_C2.csv,dados/brutos/metricas-analise-1795085477631.csv,"Cenário reduzido proporcional (lambda=0.06, C=2)"
+E4,Pico dimensionado,0.15,6,15,dados/E4_combinado/E4_combinado_pico_lambda0.15_C6.csv,dados/brutos/metricas-analise-1795085480142.csv,"Cenário de pico com frota reforçada (lambda=0.15, C=6)"
